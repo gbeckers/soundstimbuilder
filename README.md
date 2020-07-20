@@ -1,6 +1,9 @@
 Soundstimbuilder
 ================
 
+Soundstimbuilder is a python package to create experimental sound stimuli.
+
+
 Installation
 ------------
 To install the latest development version, use pip with the latest GitHub
