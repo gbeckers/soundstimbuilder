@@ -15,7 +15,7 @@ setuptools.setup(
     name='soundstimbuilder',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    packages=['soundstimbuilder', 'soundstimbuilder.tests'],
+    packages=['soundstimbuilder', 'soundstimbuilder.praattextgrids', 'soundstimbuilder.tests'],
     url='https://github.com/gbeckers/soundstimbuilder',
     license='BSD-3',
     author='Gabriel J.L. Beckers',
