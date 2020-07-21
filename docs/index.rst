@@ -22,10 +22,7 @@ first (not sure, but can't hurt): ::
 
 Status
 ------
-Darr is relatively new, and therefore in its alpha stage. It is being used in
-practice in the lab, and test coverage is over 90%, but first beta release will
-have to wait until test coverage is near 100% and the API is more stable. The
-naming of some functions/methods may still change.
+Soundstimbuilders is relatively new, and therefore in its alpha stage.
 
 
 .. toctree::
