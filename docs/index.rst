@@ -8,7 +8,7 @@ This package is in alpha stage. Do not use yet outside our lab.
 
 Installation
 ------------
-It is best to install in a separate conda environment (see below):
+It is best to install in a separate conda environment:
 
 To install the latest development version, use pip with the latest GitHub
 master: ::
