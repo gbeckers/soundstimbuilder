@@ -3,14 +3,25 @@ Soundstimbuilder
 
 Soundstimbuilder is a python package for creating experimental sound stimuli.
 
+This package is in alpha stage. Do not use yet outside our lab.
+
 
 Installation
 ------------
+It is best to install in a separate conda environment (see below):
+
 To install the latest development version, use pip with the latest GitHub
 master: ::
 
     $ pip install git+https://github.com/gbeckers/soundstimbuilder@master
 
+If you already have an older version installed, you may have to uninstall
+ first (not sure, but can't hurt):
+ 
+    $ pip uninstall soundstimbuilder
+ 
+Conda environment
+-----------------
 It is best to first create a separate Anaconda environment for installation, for now with a number of packages
 with specific versions.
 
@@ -28,9 +39,7 @@ You can also create this environment from Anaconda Navigator, without using a te
 Testing
 -------
 
-To run the test suite:
-
-.. code:: python
+To run the test suite: ::
 
     >>> import soundstimbuilder as sb
     >>> sb.test()
