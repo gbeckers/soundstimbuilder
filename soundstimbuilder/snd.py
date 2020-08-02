@@ -2,6 +2,7 @@ import numpy as np
 import scipy.io.wavfile
 import scipy.signal
 import matplotlib.pyplot as plt
+import resampy
 import darr
 
 from pathlib import Path
@@ -278,6 +279,11 @@ class Snd(BaseSnd):
     def scale(self, factor):
         frames = self.frames * factor
         return Snd(frames=frames, fs=self.fs)
+
+    def resample(self, newfs, filter='kaiser_best'):
+        frames = resampy.resample(self.frames, sr_orig=self.fs, sr_new=newfs,
+                                  filter=filter, axis=0)
+        return Snd(frames=frames, fs=newfs) # check this
 
 class DarrSnd(BaseSnd):
 

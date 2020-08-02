@@ -50,10 +50,11 @@ class SndSeq(BaseDataDir):
 
     def add_calibmarks_3sweeps(self, startfreq=500., endfreq=1000.,
                        chirpduration=0.2, rampduration=1e-3,
-                       silentinterval=30., overwrite=False):
+                       silentinterval=30., rms=0.05, overwrite=False):
         c = calibmark_3sweeps(startfreq=startfreq, endfreq=endfreq,
                               chirpduration=chirpduration, silenceduration=0.1,
                               rampduration=rampduration, fs=self.fs)
+        c = c.scale(rms / c.rms())
         snddict = SndDict(self.path)
         snddict.add('calibmark', c, overwrite=overwrite)
         seqtable = self.seqtable()
