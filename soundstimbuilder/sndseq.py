@@ -162,7 +162,7 @@ class SndSeqTable(pd.DataFrame):
         tier = Tier()
         lastendtime = None
         for index, row in self.iterrows():
-            if lastendtime is not None:  # add a silent interval
+            if (lastendtime is not None) and (lastendtime != row['starttime']):  # add a silent interval
                 interval = Interval()
                 interval.xmin = lastendtime
                 interval.xmax = row['starttime']
