@@ -104,9 +104,11 @@ class SndDict(BaseDataDir):
 
 
 
-def create_snddict(path, d, overwrite=False, datetimestring=None, warnexistingfiles=True):
-    if datetimestring is None:
+def create_snddict(path, d, overwrite=False, datetime=None, warnexistingfiles=True):
+    if datetime is None:
         path = str(path) + '_' + datetimestring()
+    else:
+        path = str(path) + '_' + datetime
     bd = create_basedatadir(path=path, overwrite=overwrite)
     if warnexistingfiles:
         for path in bd.path.iterdir():
