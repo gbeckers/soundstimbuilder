@@ -53,8 +53,8 @@ class SndSeq(BaseDataDir):
                        silentinterval=30., rms=0.2, overwrite=False):
         c = calibmark_3sweeps(startfreq=startfreq, endfreq=endfreq,
                               chirpduration=chirpduration, silenceduration=0.1,
-                              rampduration=rampduration, fs=self.fs)
-        c = c.scale(rms / c.rms())
+                              rampduration=rampduration, fs=self.fs,
+                              rmsamp=rms)
         snddict = SndDict(self.path)
         snddict.add('calibmark', c, overwrite=overwrite)
         seqtable = self.seqtable()

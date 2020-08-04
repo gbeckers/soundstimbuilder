@@ -76,8 +76,9 @@ def harmonic(duration=None, nframes=None, fs=44100., fundfreq=500.,
 
 
 def calibmark_3sweeps(fs=44100., startfreq=500., endfreq=1000., chirpduration=0.2, silenceduration=0.1,
-                      rampduration=1e-3, dtype='float64'):
-    c = chirp(duration=chirpduration, fs=fs, startfreq=startfreq, endfreq=endfreq, dtype=dtype)
+                      rampduration=1e-3, rmsamp=0.2, dtype='float64'):
+    c = chirp(duration=chirpduration, fs=fs, startfreq=startfreq, endfreq=endfreq,
+              rmsamp=rmsamp, dtype=dtype)
     c = c.ramp(duration=rampduration)
     s = silence(duration=silenceduration, fs=fs, dtype=dtype)
     return concatenate([c, s, c, s, s, s, c])
