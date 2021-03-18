@@ -32,7 +32,7 @@ need to be appended to conda's channel list (if it is already appended, then the
 
 In a terminal, use the following to create an environment called "sndbld": ::
 
-    $ conda create -n sndbld python=3.8 jupyter=1.0 scipy=1.4 darr=0.2.2 pandas=1.0 matplotlib=3.1
+    $ conda create -n sndbld python=3.8 jupyter=1.0 scipy=1.4 darr=0.3 pandas=1.0 matplotlib=3.1
 
 You can also create this environment from Anaconda Navigator, without using a terminal.
 
