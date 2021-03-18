@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import time
-from darr.basedatadir import BaseDataDir
+from darr.datadir import DataDir
 from .snd import Snd, wavread
 from .snddict import SndDict
 from .utils import duration_string, datetimestring
@@ -10,7 +10,7 @@ from .sndfactory import calibmark_3sweeps
 
 __all__ = ['SndSeq', 'SndSeqTable', 'create_sndseq']
 
-class SndSeq(BaseDataDir):
+class SndSeq:
 
     _classid = 'SndSeq'
     _seqfile = 'sndseq.csv'
@@ -18,15 +18,15 @@ class SndSeq(BaseDataDir):
 
 
     def __init__(self, path, tablekey=None):
-        BaseDataDir.__init__(self=self, path=path)
+        self.datadir = DataDir(path=path)
         if tablekey is not None:
             self._seqfile = f'{self._seqfile.rsplit( ".", 1 )[0]}_{tablekey}.csv'
             self._infofile = f'{self._infofile.rsplit(".", 1)[0]}_{tablekey}.json'
-        if not (self.path /self._seqfile).exists():
+        if not (self.datadir.path /self._seqfile).exists():
             raise IOError(f"cannot find table file '{self._seqfile}'")
-        if not (self.path / self._infofile).exists():
+        if not (self.datadir.path / self._infofile).exists():
             raise IOError(f"cannot find table file '{self._infofile}'")
-        d = self._read_jsondict(self._infofile)
+        d = self.datadir.read_jsondict(self._infofile)
         self.fs = d['fs']
         self.nframes = d['nframes']
         self.duration = self.nframes / self.fs
@@ -35,7 +35,7 @@ class SndSeq(BaseDataDir):
 
 
     def __str__(self):
-        return f'{self._classid}: {self.path.name} <{self.nsnds} snds, {duration_string(self.duration)} >'
+        return f'{self._classid}: {self.datadir.path.name} <{self.nsnds} snds, {duration_string(self.duration)} >'
 
     __repr__ = __str__
 
@@ -45,7 +45,7 @@ class SndSeq(BaseDataDir):
                   'endframe': 'int64',
                   'starttime': 'float64',
                   'endtime': 'float64'}
-        return SndSeqTable(pd.read_csv(self.path / self._seqfile).astype(dtypes))
+        return SndSeqTable(pd.read_csv(self.datadir.path / self._seqfile).astype(dtypes))
 
 
     def add_calibmarks_3sweeps(self, startfreq=500., endfreq=1000.,
@@ -55,7 +55,7 @@ class SndSeq(BaseDataDir):
                               chirpduration=chirpduration, silenceduration=0.1,
                               rampduration=rampduration, fs=self.fs,
                               rmsamp=rms)
-        snddict = SndDict(self.path)
+        snddict = SndDict(self.datadir.path)
         snddict.add('calibmark', c, overwrite=overwrite)
         seqtable = self.seqtable()
         c1 = pd.DataFrame({'startframe':[0], 'snd': ['calibmark'], 'endframe': [c.nframes]})
@@ -68,9 +68,9 @@ class SndSeq(BaseDataDir):
         seqtable = pd.concat([c1, seqtable, c2])
         seqtable['starttime'] = seqtable['startframe'] / float(self.fs)
         seqtable['endtime'] = seqtable['endframe'] / float(self.fs)
-        snddict._write_jsondict(filename=self._seqfile, d={'fs': self.fs, 'nframes': endframe, 'nsnds': len(seqtable)},
+        snddict.datadir.write_jsondict(filename=self._seqfile, d={'fs': self.fs, 'nframes': endframe, 'nsnds': len(seqtable)},
                                 overwrite=True)
-        seqtablepath = snddict.path / self._seqfile
+        seqtablepath = snddict.datadir.path / self._seqfile
         time.sleep(2.) # needed for windows
         seqtablepath.unlink()
         cols = ['snd', 'startframe', 'endframe', 'starttime', 'endtime']
@@ -92,8 +92,8 @@ class SndSeq(BaseDataDir):
         origtable = self.seqtable()
         s1name = origtable.iloc[0]['snd']
         s2name = origtable.iloc[-1]['snd']
-        s1 = wavread(self.path / f'{s1name}.wav')
-        s2 = wavread(self.path / f'{s2name}.wav')
+        s1 = wavread(self.datadir.path / f'{s1name}.wav')
+        s2 = wavread(self.datadir.path / f'{s2name}.wav')
         if lookduration is None:
             lookduration = 0.2 * self.duration
         looknframes = int(round(lookduration * snd.fs))
@@ -124,7 +124,7 @@ class SndSeq(BaseDataDir):
 
 
     def to_snd(self, dtype='float32'):
-        snddict = SndDict(self.path).read()
+        snddict = SndDict(self.datadir.path).read()
         seqtable = self.seqtable()
         nframes = seqtable['endframe'].iloc[-1]
         nchannels = snddict[seqtable['snd'][0]].nchannels
@@ -235,17 +235,17 @@ def create_sndseq(snddict, seqtable, tablekey=None, overwrite=False):
         tablekey = ds
     else:
         tablekey = f'{tablekey}_{ds}'
-    seqpath = snddict.path / f'{SndSeq._seqfile.rsplit( ".", 1 )[0]}_{tablekey}.csv'
+    seqpath = snddict.datadir.path / f'{SndSeq._seqfile.rsplit( ".", 1 )[0]}_{tablekey}.csv'
     infopath = f'{SndSeq._infofile.rsplit( ".", 1 )[0]}_{tablekey}.json'
     if seqpath.exists() and overwrite:
         seqpath.unlink()
     newcols = ['snd','startframe', 'endframe', 'starttime', 'endtime']
     oldcols = [col for col in list(seqtable.columns) if col not in newcols]
     seqtable.to_csv(seqpath, index=False, columns=newcols+oldcols)
-    snddict._write_jsondict(filename=infopath,
+    snddict.datadir.write_jsondict(filename=infopath,
                             d={'fs': fs, 'nframes': int(endframes[-1]), 'nsnds': len(seqtable)},
                             overwrite=overwrite)
-    return SndSeq(snddict.path, tablekey=tablekey)
+    return SndSeq(snddict.datadir.path, tablekey=tablekey)
 
 
 

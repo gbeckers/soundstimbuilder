@@ -1,12 +1,12 @@
 import os
 import warnings
-from darr.basedatadir import BaseDataDir, create_basedatadir
+from darr.datadir import DataDir, create_datadir
 from .snd import wavread, Snd, DarrSnd
 from .utils import datetimestring
 
 __all__ = ['create_snddict', 'SndDict']
 
-class SndDict(BaseDataDir):
+class SndDict:
     """Disk-based dictionary of sounds.
 
     Essentially all wav files in a directory. They need to have the lowercase '.wav'
@@ -19,20 +19,20 @@ class SndDict(BaseDataDir):
     _infofile = 'snddict.json'
 
     def __init__(self, path):
-        BaseDataDir.__init__(self=self, path=path)
-        if not (self.path / self._infofile).exists():
+        self.datadir = DataDir(path=path)
+        if not (self.datadir.path / self._infofile).exists():
             self._updateinfofile()
 
     def __getitem__(self, item):
-        return wavread(self.path / f'{item}.wav')
+        return wavread(self.datadir.path / f'{item}.wav')
 
     def __str__(self):
-        return f'{self._classid}: {self.path.name} {self.keys()}'
+        return f'{self._classid}: {self.datadir.path.name} {self.keys()}'
 
     __repr__ = __str__
 
     def _updateinfofile(self):
-        keys = sorted([file[:-4] for file in os.listdir(self.path) if file.endswith(".wav")])
+        keys = sorted([file[:-4] for file in os.listdir(self.datadir.path) if file.endswith(".wav")])
         d = {}
         for key in keys:
             snd = self[key]
@@ -41,24 +41,24 @@ class SndDict(BaseDataDir):
             d[key]['nchannels'] = snd.nchannels
             d[key]['nframes'] = snd.nframes
             d[key]['duration'] = snd.duration
-        self._write_jsondict(self._infofile, d, overwrite=True)
+        self.datadir.write_jsondict(self._infofile, d, overwrite=True)
 
     def info(self):
-        return self._read_jsondict(self._infofile)
+        return self.datadir.read_jsondict(self._infofile)
 
     def add(self, key, snd, overwrite=False):
         if not isinstance(snd, (Snd, DarrSnd)):
             raise TypeError(f'cannot add object of type {type(snd)} to {self._classid}')
         if key in self.keys() and not overwrite:
             raise ValueError(f'SndDict already contains a Snd wih key {key}, use the pop method to remove first')
-        snd.to_wav(self.path / f'{key}.wav', dtype='float32', overwrite=overwrite)
-        d = self._read_jsondict(self._infofile)
+        snd.to_wav(self.datadir.path / f'{key}.wav', dtype='float32', overwrite=overwrite)
+        d = self.datadir.read_jsondict(self._infofile)
         d[key] = {}
         d[key]['fs'] = snd.fs
         d[key]['nchannels'] = snd.nchannels
         d[key]['nframes'] = snd.nframes
         d[key]['duration'] = snd.duration
-        self._write_jsondict(self._infofile, d, overwrite=True)
+        self.datadir.write_jsondict(self._infofile, d, overwrite=True)
 
     def keys(self):
         return sorted(self.info().keys())
@@ -70,10 +70,10 @@ class SndDict(BaseDataDir):
     def pop(self, key):
         if not key in self.keys():
             raise ValueError(f"Snd {key} does not exist in SndDict")
-        (self.path / f'{key}.wav').unlink()
-        d = self._read_jsondict(self._infofile)
+        (self.datadir.path / f'{key}.wav').unlink()
+        d = self.datadir.read_jsondict(self._infofile)
         d.pop(key)
-        self._write_jsondict(self._infofile, d, overwrite=True)
+        self.datadir.write_jsondict(self._infofile, d, overwrite=True)
 
     def allsame(self):
         """Tests if attributes of all sounds are the same (fs, nchannels, nframes, duration).
@@ -109,7 +109,7 @@ def create_snddict(path, d, overwrite=False, datetime=None, warnexistingfiles=Tr
         path = str(path) + '_' + datetimestring()
     else:
         path = str(path) + '_' + datetime
-    bd = create_basedatadir(path=path, overwrite=overwrite)
+    bd = create_datadir(path=path, overwrite=overwrite)
     if warnexistingfiles:
         for path in bd.path.iterdir():
             warnings.warn(f'"{bd.path}" already contains "{path.parts[-1]}"')
