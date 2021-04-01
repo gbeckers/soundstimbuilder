@@ -56,3 +56,25 @@ def timeparams(nframes=None, fs=None, duration=None):
 
 def datetimestring():
     return time.strftime('%Y%m%d%H%M%S')
+
+def recode_keys(origkeys):
+    import string, itertools
+    origkeys = sorted(set(origkeys))
+    tokens = string.ascii_lowercase
+    ntokens = len(tokens)
+    newkeylen = 1
+    while (ntokens**newkeylen) / len(origkeys) < 1:
+        newkeylen += 1
+    keymapping = {}
+    for origkey, s in zip(origkeys, itertools.permutations(string.ascii_lowercase, newkeylen)):
+        keymapping[origkey] = ''.join(s)
+    return keymapping
+
+
+def mel_to_hz(a):
+    return 700.*(np.power(10,a/2595.)-1.0)
+
+def A_weighting(f):
+    f = np.float64(f)
+    r_a = (12200**2 * f**4) / ((f**2 + 20.6**2)*((f**2 + 107.7**2)*(f**2 + 737.9**2))**0.5*(f**2 + 12200**2))
+    return 2.0 + 20*np.log10(r_a)
