@@ -216,7 +216,7 @@ def create_sndseq(snddict, seqtable, tablekey=None, overwrite=False):
     endframe = 0
     startframes = []
     endframes = []
-    fs = snddict.info()[seqtable['snd'][0]]['fs'] # just take fs of first sound, should all be same
+    fs = snddict.info()[seqtable['snd'].iloc[0]]['fs'] # just take fs of first sound, should all be same
     for index, row in seqtable.iterrows():
         startframe = int(round(row['starttime'] * fs))
         if not startframe >= endframe:
