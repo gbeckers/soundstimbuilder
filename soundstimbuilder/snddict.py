@@ -29,6 +29,9 @@ class SndDict:
     def __str__(self):
         return f'{self._classid}: {self.datadir.path.name} {self.keys()}'
 
+    def __len__(self):
+        return len(self.keys())
+
     __repr__ = __str__
 
     def _updateinfofile(self):
