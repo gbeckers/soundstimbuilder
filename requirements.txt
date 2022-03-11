@@ -3,4 +3,6 @@ numpy
 matplotlib
 pandas
 scipy
+resampy
+
 
