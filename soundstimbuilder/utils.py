@@ -78,3 +78,61 @@ def A_weighting(f):
     f = np.float64(f)
     r_a = (12200**2 * f**4) / ((f**2 + 20.6**2)*((f**2 + 107.7**2)*(f**2 + 737.9**2))**0.5*(f**2 + 12200**2))
     return 2.0 + 20*np.log10(r_a)
+
+eps = np.power(2.0, -52.0)
+
+def round_nextradix2(number):
+    return int(pow(2, np.ceil(np.log2(number))))
+
+
+def round_nearestradix2(number):
+    return int(pow(2, np.round(np.log2(number))))
+
+
+def round_nearestodd(number):
+    n = int(np.round(number))  # nearest int
+    if n % 2 == 0:  # n is even
+        if n - number < 0:
+            n += 1
+        else:
+            n -= 1
+    return n
+
+
+def round_nearesteven(number):
+    n = int(np.round(number))  # nearest int
+    if n % 2 == 1:  # n is odd
+        if n - number < 0:
+            n += 1
+        else:
+            n -= 1
+    return n
+
+
+def iseven(number):
+    return (number % 2.0) == 0.0
+
+
+def isodd(number):
+    return (number % 2.0) == 1.0
+
+
+def alleven(numbers):
+    return np.all((np.asarray(numbers) % 2.0) == 0.0)
+
+
+def allodd(numbers):
+    return np.all((np.asarray(numbers) % 2.0) == 1.0)
+
+def isradix2(number):
+    if not (number & (number - 1)):
+        return True
+    else:
+        return False
+
+def allradix2(numbers):
+    numbers = np.asarray(numbers)
+    if not (numbers & (numbers- 1)).any():
+        return True
+    else:
+        return False

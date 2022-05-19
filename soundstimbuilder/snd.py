@@ -7,9 +7,9 @@ import darr
 
 from pathlib import Path
 
-from .utils import duration_string
+from .utils import duration_string, round_nearesteven
 
-__all__ = ['concatenate', 'wavread', 'Snd']
+__all__ = ['concatenate', 'overlap_and_add', 'wavread', 'Snd']
 
 
 class BaseSnd():
@@ -359,3 +359,51 @@ def concatenate(snds):
         frames[startframe:endframe] = snd.frames
         startframe = endframe
     return Snd(frames=frames, fs=snds[0].fs)
+
+def overlap_and_add(snd1, snd2, overlapdur):
+    """
+    Concatenates two time-sampled signals along the time axis with an overlap.
+
+    At the end of the first signal and the beginning of the second signals a
+    time segments of noverlap samples are windowed with a half hanning window
+    and then summed, so that the transition betweem the two sounds is smooth.
+
+    Parameters
+    ----------
+    snd1: first Snd
+    snd2: second Snd
+    overlapdur: float
+        The duration of the time segment where overlap occurs.
+
+    Returns
+    -------
+    Snd
+
+    """
+    snds = [snd1,snd2]
+    if not all(snd.fs==snds[0].fs for snd in snds):
+        raise TypeError("not all snds have the same fs")
+    if not all(snd.nchannels==snds[0].nchannels for snd in snds):
+        raise TypeError("not all snds have the same nchannels")
+    window = np.hanning
+    noverlap = round_nearesteven(overlapdur * snd1.fs)
+    if noverlap > snd1.nframes:
+        raise ValueError("overlapdur larger than snd1")
+    if noverlap > snd2.nframes:
+        raise ValueError("overlapdur larger than snd2")
+    w = window(noverlap * 2 + 1)
+    w1 = w[noverlap:]
+    w2 = w[:noverlap + 1]
+    nsamples = snd1.nframes + snd2.nframes - len(w1)
+    shape = list(snd1.frames.shape)
+    shape[0] = nsamples
+    samples = np.zeros(shape, dtype=snd1.frames.dtype)
+    s = Snd(samples, snd1.fs)
+    s.frames[:snd1.nframes - len(w1)] = snd1.frames[:-len(w1)]
+    s.frames[snd1.nframes:] = snd2.frames[len(w1):]
+    s.frames[snd1.nframes - len(w1):snd1.nframes] \
+        = np.apply_along_axis(np.multiply, 0, snd1.frames[-len(w1):], w1)
+    s.frames[snd1.nframes - len(w2):snd1.nframes] \
+        = s.frames[snd1.nframes - len(w2):snd1.nframes] \
+          + np.apply_along_axis(np.multiply, 0, snd2.frames[:len(w2)], w2)
+    return s
